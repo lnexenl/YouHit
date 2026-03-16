@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Heatmap } from '@/components/Heatmap';
+import { Heatmap, HeatmapRef } from '@/components/Heatmap';
 import { StatsPanel } from '@/components/StatsPanel';
 import { LoginButton } from '@/components/LoginButton';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
@@ -25,9 +25,11 @@ function AppContent() {
 
   const [colorScheme, setColorScheme] = useState<ColorSchemeKey>('flare');
   const [mapStyle, setMapStyle] = useState<MapStyleKey>('dark-v11');
+  const [showLabels, setShowLabels] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>({ startDate: null, endDate: null });
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const heatmapRef = useRef<HeatmapRef>(null);
 
   const allTypes = useMemo(() => {
     const types = new Set<string>();
@@ -120,12 +122,15 @@ function AppContent() {
           onColorSchemeChange={setColorScheme}
           mapStyle={mapStyle}
           onMapStyleChange={setMapStyle}
+          showLabels={showLabels}
+          onShowLabelsChange={setShowLabels}
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
           selectedTypes={selectedTypes}
           onSelectedTypesChange={setSelectedTypes}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          heatmapRef={heatmapRef}
         />
         
         {athlete && (
@@ -179,7 +184,13 @@ function AppContent() {
         )}
         
         {filteredActivities.length > 0 && !activitiesLoading ? (
-          <Heatmap activities={filteredActivities} colorScheme={colorScheme} mapStyle={mapStyle} />
+          <Heatmap
+            ref={heatmapRef}
+            activities={filteredActivities}
+            colorScheme={colorScheme}
+            mapStyle={mapStyle}
+            showLabels={showLabels}
+          />
         ) : !activitiesLoading ? (
           <div className="h-full flex items-center justify-center text-neutral-500">
             <p>No activities found with location data</p>

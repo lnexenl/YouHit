@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Map, useControl } from 'react-map-gl';
+import { useMemo, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { Map, useControl, MapRef } from 'react-map-gl';
 import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox';
 import { PathLayer } from '@deck.gl/layers';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -8,6 +8,7 @@ import type { Activity } from '@/types/activity';
 import { decodePolyline, calculateWeightedCenter } from '@/lib/polyline';
 import { getPathColor, ColorSchemeKey } from './ColorSchemeSelector';
 import type { MapStyleKey } from './MapStyleSelector';
+import { getStyleUrl } from './MapStyleSelector';
 
 function DeckGLOverlay(props: MapboxOverlayProps) {
   const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
@@ -15,26 +16,41 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
   return null;
 }
 
+export interface HeatmapRef {
+  downloadImage: () => void;
+}
+
 interface HeatmapProps {
   activities: Activity[];
   colorScheme: ColorSchemeKey;
   mapStyle: MapStyleKey;
+  showLabels: boolean;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const getStyleUrl = (key: MapStyleKey): string => {
-  const styles: Record<MapStyleKey, string> = {
-    'dark-v11': 'mapbox://styles/mapbox/dark-v11',
-    'streets-v12': 'mapbox://styles/mapbox/streets-v12',
-    'satellite-v9': 'mapbox://styles/mapbox/satellite-v9',
-    'outdoors-v12': 'mapbox://styles/mapbox/outdoors-v12',
-    'light-v11': 'mapbox://styles/mapbox/light-v11',
-  };
-  return styles[key];
-};
+export const Heatmap = forwardRef<HeatmapRef, HeatmapProps>(function Heatmap(
+  { activities, colorScheme, mapStyle, showLabels },
+  ref
+) {
+  const mapRef = useRef<MapRef>(null);
 
-export function Heatmap({ activities, colorScheme, mapStyle }: HeatmapProps) {
+  const downloadImage = useCallback(() => {
+    if (mapRef.current) {
+      const map = mapRef.current.getMap();
+      const canvas = map.getCanvas();
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `youhit-heatmap-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataURL;
+      link.click();
+    }
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    downloadImage,
+  }));
+
   const paths = useMemo(() => {
     return activities
       .filter((a) => a.map?.summary_polyline)
@@ -105,12 +121,14 @@ export function Heatmap({ activities, colorScheme, mapStyle }: HeatmapProps) {
 
   return (
     <Map
+      ref={mapRef}
       initialViewState={initialViewState}
-      mapStyle={getStyleUrl(mapStyle)}
+      mapStyle={getStyleUrl(mapStyle, showLabels)}
       mapboxAccessToken={MAPBOX_TOKEN}
       attributionControl={false}
+      preserveDrawingBuffer={true}
     >
       <DeckGLOverlay layers={layers} interleaved={true} />
     </Map>
   );
-}
+});

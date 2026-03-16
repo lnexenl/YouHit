@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 export const COLOR_SCHEMES = {
   flare: {
     name: 'Flare',
-    color: [255, 69, 0, 80],
+    color: [255, 248, 220, 80],
   },
   fire: {
     name: 'Fire',

@@ -1,4 +1,4 @@
-import { Map, Satellite, Sun, Moon, Mountain } from 'lucide-react';
+import { Map, Satellite, Sun, Moon, Mountain, Eye, EyeOff } from 'lucide-react';
 
 export type MapStyleKey = 'dark-v11' | 'streets-v12' | 'satellite-v9' | 'outdoors-v12' | 'light-v11';
 
@@ -13,12 +13,14 @@ export const MAP_STYLES: Record<MapStyleKey, { name: string; style: string; icon
 interface MapStyleSelectorProps {
   selected: MapStyleKey;
   onChange: (style: MapStyleKey) => void;
+  showLabels: boolean;
+  onShowLabelsChange: (show: boolean) => void;
 }
 
-export function MapStyleSelector({ selected, onChange }: MapStyleSelectorProps) {
+export function MapStyleSelector({ selected, onChange, showLabels, onShowLabelsChange }: MapStyleSelectorProps) {
   return (
-    <div>
-      <h3 className="text-neutral-400 text-xs uppercase tracking-wider mb-2">
+    <div className="space-y-2">
+      <h3 className="text-neutral-400 text-xs uppercase tracking-wider">
         Map Style
       </h3>
       <div className="flex gap-1.5">
@@ -41,6 +43,37 @@ export function MapStyleSelector({ selected, onChange }: MapStyleSelectorProps) 
           );
         })}
       </div>
+      <button
+        onClick={() => onShowLabelsChange(!showLabels)}
+        className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all ${
+          showLabels
+            ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50'
+            : 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
+        }`}
+      >
+        {showLabels ? (
+          <>
+            <Eye className="w-3.5 h-3.5" />
+            <span>Labels Visible</span>
+          </>
+        ) : (
+          <>
+            <EyeOff className="w-3.5 h-3.5" />
+            <span>Labels Hidden</span>
+          </>
+        )}
+      </button>
     </div>
   );
+}
+
+export function getStyleUrl(key: MapStyleKey, showLabels: boolean): string {
+  const styles: Record<MapStyleKey, string> = {
+    'dark-v11': showLabels ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/dark-v11-no-labels',
+    'streets-v12': showLabels ? 'mapbox://styles/mapbox/streets-v12' : 'mapbox://styles/mapbox/streets-v12-no-labels',
+    'satellite-v9': showLabels ? 'mapbox://styles/mapbox/satellite-v9' : 'mapbox://styles/mapbox/satellite-streets-v12',
+    'outdoors-v12': showLabels ? 'mapbox://styles/mapbox/outdoors-v12' : 'mapbox://styles/mapbox/outdoors-v12-no-labels',
+    'light-v11': showLabels ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/light-v11-no-labels',
+  };
+  return styles[key];
 }

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PanelLeft, Download, Map, Activity as ActivityIcon } from 'lucide-react';
 import type { Activity } from '@/types/activity';
 import { ColorSchemeSelector, ColorSchemeKey } from './ColorSchemeSelector';
 import { ActivityTypeSelector } from './ActivityTypeSelector';
 import { MapStyleSelector, MapStyleKey } from './MapStyleSelector';
 import { DateRangeSelector, DateRange } from './DateRangeSelector';
+import type { HeatmapRef } from './Heatmap';
 
 interface StatsPanelProps {
   activities: Activity[];
@@ -14,12 +15,15 @@ interface StatsPanelProps {
   onColorSchemeChange: (scheme: ColorSchemeKey) => void;
   mapStyle: MapStyleKey;
   onMapStyleChange: (style: MapStyleKey) => void;
+  showLabels: boolean;
+  onShowLabelsChange: (show: boolean) => void;
   dateRange: DateRange;
   onDateRangeChange: (range: DateRange) => void;
   selectedTypes: string[];
   onSelectedTypesChange: (types: string[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  heatmapRef: React.RefObject<HeatmapRef | null>;
 }
 
 export function StatsPanel({
@@ -30,12 +34,15 @@ export function StatsPanel({
   onColorSchemeChange,
   mapStyle,
   onMapStyleChange,
+  showLabels,
+  onShowLabelsChange,
   dateRange,
   onDateRangeChange,
   selectedTypes,
   onSelectedTypesChange,
   isCollapsed = false,
   onToggleCollapse,
+  heatmapRef,
 }: StatsPanelProps) {
   const stats = useMemo(() => {
     const total = activities.length;
@@ -78,6 +85,10 @@ export function StatsPanel({
       return `${days}d ${hours % 24}h`;
     }
     return `${hours}h ${Math.floor((seconds % 3600) / 60)}m`;
+  };
+
+  const handleDownload = () => {
+    heatmapRef.current?.downloadImage();
   };
 
   if (isLoading) {
@@ -131,17 +142,43 @@ export function StatsPanel({
         )}
       </div>
 
-      <ColorSchemeSelector selected={colorScheme} onChange={onColorSchemeChange} />
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-neutral-300">
+          <Map className="w-4 h-4" />
+          <span className="text-xs uppercase tracking-wider font-medium">Map Options</span>
+        </div>
+        <div className="pl-6 space-y-4">
+          <ColorSchemeSelector selected={colorScheme} onChange={onColorSchemeChange} />
+          <MapStyleSelector
+            selected={mapStyle}
+            onChange={onMapStyleChange}
+            showLabels={showLabels}
+            onShowLabelsChange={onShowLabelsChange}
+          />
+          <button
+            onClick={handleDownload}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700 rounded-lg text-sm text-neutral-300 hover:text-white transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download Heatmap</span>
+          </button>
+        </div>
+      </div>
 
-      <MapStyleSelector selected={mapStyle} onChange={onMapStyleChange} />
-
-      <DateRangeSelector value={dateRange} onChange={onDateRangeChange} />
-
-      <ActivityTypeSelector
-        activities={allActivities}
-        selectedTypes={selectedTypes}
-        onChange={onSelectedTypesChange}
-      />
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-neutral-300">
+          <ActivityIcon className="w-4 h-4" />
+          <span className="text-xs uppercase tracking-wider font-medium">Activity Filters</span>
+        </div>
+        <div className="pl-6 space-y-4">
+          <DateRangeSelector value={dateRange} onChange={onDateRangeChange} />
+          <ActivityTypeSelector
+            activities={allActivities}
+            selectedTypes={selectedTypes}
+            onChange={onSelectedTypesChange}
+          />
+        </div>
+      </div>
 
       <div className="bg-neutral-800/50 rounded-xl p-3">
         <p className="text-neutral-400 text-xs uppercase tracking-wider mb-0.5">
