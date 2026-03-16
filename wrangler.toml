@@ -6,15 +6,14 @@ compatibility_date = "2026-01-01"
 directory = "./client/dist"
 binding = "ASSETS"
 
-[[kv_namespaces]]
-binding = "SESSION_KV"
-id = "YOUR_KV_NAMESPACE_ID"
-
 [vars]
 CLIENT_URL = "https://youhit.lnex.dev"
 API_REDIRECT_URI = "https://youhit.lnex.dev/auth/callback"
 
-# Secrets (set via: wrangler secret put or CF dashboard)
-# API_CLIENT_ID
-# API_CLIENT_SECRET
-# SESSION_SECRET
+# KV namespace bound via CF dashboard:
+# Variable name: SESSION_KV
+#
+# Secrets set via CF dashboard (Workers → Settings → Variables):
+# - API_CLIENT_ID
+# - API_CLIENT_SECRET
+# - SESSION_SECRET
