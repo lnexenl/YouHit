@@ -6,10 +6,6 @@ compatibility_date = "2026-01-01"
 directory = "./client/dist"
 binding = "ASSETS"
 
-[vars]
-CLIENT_URL = "https://youhit.lnex.dev"
-API_REDIRECT_URI = "https://youhit.lnex.dev/auth/callback"
-
 # KV namespace bound via CF dashboard:
 # Variable name: SESSION_KV
 #
