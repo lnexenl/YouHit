@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const { isAuthenticated, athlete, isLoading: authLoading, logout } = useAuth();
-  const { activities, isLoading: activitiesLoading, refetch } = useActivities(isAuthenticated);
+  const { activities, isLoading: activitiesLoading, isLoadingPolylines, polylineProgress, refetch } = useActivities(isAuthenticated);
 
   const [colorScheme, setColorScheme] = useState<ColorSchemeKey>('flare');
   const [mapStyle, setMapStyle] = useState<MapStyleKey>('dark-v11');
@@ -166,8 +166,12 @@ function AppContent() {
       <div className="flex-1 relative">
         {activitiesLoading && (
           <LoadingOverlay 
-            message="Loading your activities..." 
-            progress={activities.length}
+            message={isLoadingPolylines 
+              ? "Loading detailed routes..."
+              : "Loading your activities..."
+            }
+            progress={isLoadingPolylines ? polylineProgress.loaded : activities.length}
+            total={isLoadingPolylines ? polylineProgress.total : undefined}
           />
         )}
         

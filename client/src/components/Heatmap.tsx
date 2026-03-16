@@ -39,7 +39,8 @@ export function Heatmap({ activities, colorScheme, mapStyle }: HeatmapProps) {
     return activities
       .filter((a) => a.map?.summary_polyline)
       .map((activity, index) => {
-        const coords = decodePolyline(activity.map!.summary_polyline);
+        const encoded = activity.map?.polyline || activity.map!.summary_polyline;
+        const coords = decodePolyline(encoded);
         const path = coords.map(([lat, lng]) => [lng, lat]);
         return {
           path,

@@ -48,6 +48,11 @@ export async function getActivities(
   return response.data;
 }
 
+export async function getActivity(activityId: number): Promise<Activity> {
+  const response = await api.get<Activity>(`/api/activities/${activityId}`);
+  return response.data;
+}
+
 export async function getAllActivities(
   onProgress?: (loaded: number) => void
 ): Promise<Activity[]> {
@@ -67,6 +72,53 @@ export async function getAllActivities(
   }
 
   return allActivities;
+}
+
+export async function fetchFullPolylines(
+  activities: Activity[],
+  onProgress?: (loaded: number, total: number) => void,
+  batchSize: number = 5
+): Promise<Activity[]> {
+  const activitiesWithPolyline = [...activities];
+  const activitiesToFetch = activities.filter(
+    (a) => a.map?.summary_polyline && !a.map?.polyline
+  );
+
+  let fetched = 0;
+  const total = activitiesToFetch.length;
+
+  for (let i = 0; i < activitiesToFetch.length; i += batchSize) {
+    const batch = activitiesToFetch.slice(i, i + batchSize);
+
+    const results = await Promise.all(
+      batch.map(async (activity) => {
+        try {
+          const fullActivity = await getActivity(activity.id);
+          return { id: activity.id, polyline: fullActivity.map?.polyline };
+        } catch {
+          return { id: activity.id, polyline: null };
+        }
+      })
+    );
+
+    for (const result of results) {
+      const index = activitiesWithPolyline.findIndex((a) => a.id === result.id);
+      if (index !== -1 && result.polyline) {
+        activitiesWithPolyline[index] = {
+          ...activitiesWithPolyline[index],
+          map: {
+            ...activitiesWithPolyline[index].map!,
+            polyline: result.polyline,
+          },
+        };
+      }
+    }
+
+    fetched += batch.length;
+    onProgress?.(fetched, total);
+  }
+
+  return activitiesWithPolyline;
 }
 
 export default api;
