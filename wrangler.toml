@@ -6,9 +6,10 @@ compatibility_date = "2026-01-01"
 directory = "./client/dist"
 binding = "ASSETS"
 
-# KV namespace bound via CF dashboard:
-# Variable name: SESSION_KV
-#
+[[kv_namespaces]]
+binding = "SESSION_KV"
+id = "15bdaafbb59a48848a2105cc7a0feba7"
+
 # Secrets set via CF dashboard (Workers → Settings → Variables):
 # - API_CLIENT_ID
 # - API_CLIENT_SECRET
