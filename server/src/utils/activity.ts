@@ -95,7 +95,9 @@ export async function refreshAccessToken(
   });
 
   if (!response.ok) {
-    throw new Error(`Token refresh failed: ${response.status}`);
+    const errorBody = await response.text();
+    console.error('Token refresh failed:', response.status, errorBody);
+    throw new Error(`Token refresh failed: ${response.status} - ${errorBody}`);
   }
 
   return response.json();
@@ -133,7 +135,9 @@ export async function getActivities(
   });
 
   if (!response.ok) {
-    throw new Error(`Get activities failed: ${response.status}`);
+    const errorBody = await response.text();
+    console.error('Get activities failed:', response.status, errorBody);
+    throw new Error(`Get activities failed: ${response.status} - ${errorBody}`);
   }
 
   return response.json();

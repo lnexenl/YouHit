@@ -171,7 +171,8 @@ app.get('/api/activities', async (c) => {
     return c.json(activities)
   } catch (err) {
     console.error('Get activities error:', err)
-    return c.json({ error: 'Failed to fetch activities' }, 500)
+    const message = err instanceof Error ? err.message : 'Failed to fetch activities'
+    return c.json({ error: message }, 500)
   }
 })
 
@@ -221,11 +222,18 @@ async function getSession(c: any): Promise<SessionData | null> {
 async function ensureValidToken(c: any, session: SessionData): Promise<string | null> {
   const now = Math.floor(Date.now() / 1000)
 
+  console.log('Token check:', {
+    expiresAt: session.expiresAt,
+    now: now,
+    needsRefresh: session.expiresAt <= now + 300
+  })
+
   if (session.expiresAt > now + 300) {
     return session.accessToken
   }
 
   try {
+    console.log('Refreshing token...')
     const tokenData = await refreshAccessToken(
       session.refreshToken,
       c.env.API_CLIENT_ID,
@@ -241,6 +249,7 @@ async function ensureValidToken(c: any, session: SessionData): Promise<string | 
       expirationTtl: 60 * 60 * 24 * 7,
     })
 
+    console.log('Token refresh successful')
     return tokenData.access_token
   } catch (err) {
     console.error('Token refresh error:', err)
