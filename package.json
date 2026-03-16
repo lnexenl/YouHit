@@ -7,11 +7,22 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "install:all": "cd server && npm install && cd ../client && npm install",
-    "build": "cd server && npm run build && cd ../client && npm run build"
+    "dev:cf": "wrangler dev",
+    "build": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "deploy": "npm run build && wrangler deploy",
+    "cf:login": "wrangler login",
+    "cf:kv:create": "wrangler kv:namespace create SESSION_KV",
+    "install:all": "cd server && npm install && cd ../client && npm install"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@cloudflare/workers-types": "^4.20260316.1",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.74.0"
+  },
+  "dependencies": {
+    "hono": "^4.12.8"
   },
   "engines": {
     "node": ">=18"

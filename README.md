@@ -37,46 +37,95 @@ This starts:
 - Backend server on http://localhost:3001
 - Frontend dev server on http://localhost:5173
 
+---
+
+## Cloudflare Workers Deployment
+
+### Prerequisites
+1. Cloudflare account
+2. Wrangler CLI (installed via npm)
+
+### 1. Login to Cloudflare
+```bash
+npm run cf:login
+```
+
+### 2. Create KV Namespace for Sessions
+```bash
+npm run cf:kv:create
+```
+
+Copy the returned ID to `wrangler.toml`:
+```toml
+[[kv_namespaces]]
+binding = "SESSION_KV"
+id = "your-kv-namespace-id"
+```
+
+### 3. Set Secrets
+```bash
+wrangler secret put API_CLIENT_ID
+wrangler secret put API_CLIENT_SECRET
+wrangler secret put SESSION_SECRET
+```
+
+### 4. Update OAuth Redirect URI
+
+In your API application settings, set the callback URL to:
+```
+https://youhit.your-subdomain.workers.dev/auth/callback
+```
+
+Update `wrangler.toml`:
+```toml
+[vars]
+CLIENT_URL = "https://youhit.your-subdomain.workers.dev"
+API_REDIRECT_URI = "https://youhit.your-subdomain.workers.dev/auth/callback"
+```
+
+### 5. Deploy
+```bash
+npm run deploy
+```
+
+### Local CF Development
+```bash
+npm run dev:cf
+```
+
+---
+
 ## Architecture
 
 ```
 youhit/
-├── server/           # Express backend
-│   ├── src/
-│   │   ├── index.ts          # Entry point
-│   │   ├── routes/
-│   │   │   ├── auth.ts       # OAuth endpoints
-│   │   │   └── activities.ts # API proxy
-│   │   ├── middleware/
-│   │   │   └── session.ts    # Session types
-│   │   └── utils/
-│   │       └── activity.ts   # API client
-│   └── .env
+├── server/
+│   └── src/
+│       ├── index.ts          # Express server (local dev)
+│       ├── worker.ts         # Hono worker (CF Workers)
+│       └── utils/
+│           └── activity.ts   # API client (fetch-based)
 │
-└── client/           # React frontend
-    ├── src/
-    │   ├── App.tsx           # Main app component
-    │   ├── components/
-    │   │   ├── Heatmap.tsx   # Mapbox + deck.gl heatmap
-    │   │   ├── StatsPanel.tsx
-    │   │   └── ...
-    │   ├── hooks/
-    │   │   ├── useAuth.ts
-    │   │   └── useActivities.ts
-    │   ├── lib/
-    │   │   ├── api.ts        # API client
-    │   │   └── polyline.ts   # Polyline decoder
-    │   └── types/
-    │       └── activity.ts   # TypeScript types
-    └── .env
+├── client/
+│   └── src/
+│       ├── App.tsx
+│       ├── components/
+│       │   ├── Heatmap.tsx
+│       │   └── ...
+│       ├── hooks/
+│       ├── lib/
+│       └── types/
+│
+└── wrangler.toml             # CF Workers config
 ```
 
 ## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
 - **Map**: Mapbox GL JS 3, deck.gl 9 (PathLayer)
-- **Backend**: Express, TypeScript
-- **Auth**: OAuth2 with session management
+- **Backend**: Express (local), Hono (CF Workers)
+- **Auth**: OAuth2 with KV-based sessions
+- **Deploy**: Cloudflare Workers
 
 ## Features
 

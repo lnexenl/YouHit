@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 const API_BASE = 'https://www.strava.com/api/v3';
 const AUTH_BASE = 'https://www.strava.com';
 
@@ -48,47 +46,66 @@ export interface Athlete {
   summit: boolean;
 }
 
-// Exchange authorization code for tokens
 export async function exchangeCodeForToken(
   code: string,
   clientId: string,
   clientSecret: string,
   redirectUri: string
 ): Promise<TokenResponse> {
-  const response = await axios.post(`${AUTH_BASE}/oauth/token`, {
-    client_id: clientId,
-    client_secret: clientSecret,
-    code,
-    grant_type: 'authorization_code',
-    redirect_uri: redirectUri,
+  const response = await fetch(`${AUTH_BASE}/oauth/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri,
+    }),
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error(`Token exchange failed: ${response.status}`);
+  }
+
+  return response.json();
 }
 
-// Refresh expired token
 export async function refreshAccessToken(
   refreshToken: string,
   clientId: string,
   clientSecret: string
 ): Promise<TokenResponse> {
-  const response = await axios.post(`${AUTH_BASE}/oauth/token`, {
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: refreshToken,
-    grant_type: 'refresh_token',
+  const response = await fetch(`${AUTH_BASE}/oauth/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error(`Token refresh failed: ${response.status}`);
+  }
+
+  return response.json();
 }
 
-// Get authenticated athlete
 export async function getAthlete(accessToken: string): Promise<Athlete> {
-  const response = await axios.get(`${API_BASE}/athlete`, {
+  const response = await fetch(`${API_BASE}/athlete`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error(`Get athlete failed: ${response.status}`);
+  }
+
+  return response.json();
 }
 
-// Get athlete activities
 export async function getActivities(
   accessToken: string,
   page: number = 1,
@@ -96,18 +113,25 @@ export async function getActivities(
   before?: number,
   after?: number
 ): Promise<Activity[]> {
-  const params: Record<string, string | number> = { page, per_page: perPage };
-  if (before) params.before = before;
-  if (after) params.after = after;
-
-  const response = await axios.get(`${API_BASE}/athlete/activities`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    params,
+  const params = new URLSearchParams({
+    page: page.toString(),
+    per_page: perPage.toString(),
   });
-  return response.data;
+
+  if (before) params.set('before', before.toString());
+  if (after) params.set('after', after.toString());
+
+  const response = await fetch(`${API_BASE}/athlete/activities?${params}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Get activities failed: ${response.status}`);
+  }
+
+  return response.json();
 }
 
-// Generate authorization URL
 export function getAuthUrl(clientId: string, redirectUri: string): string {
   const params = new URLSearchParams({
     client_id: clientId,
