@@ -27,6 +27,7 @@ function AppContent() {
   const [mapStyle, setMapStyle] = useState<MapStyleKey>('dark-v11');
   const [dateRange, setDateRange] = useState<DateRange>({ startDate: null, endDate: null });
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const allTypes = useMemo(() => {
     const types = new Set<string>();
@@ -123,6 +124,8 @@ function AppContent() {
           onDateRangeChange={setDateRange}
           selectedTypes={selectedTypes}
           onSelectedTypesChange={setSelectedTypes}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
         
         {athlete && (

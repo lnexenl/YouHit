@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react';
 import type { Activity } from '@/types/activity';
 import { ColorSchemeSelector, ColorSchemeKey } from './ColorSchemeSelector';
 import { ActivityTypeSelector } from './ActivityTypeSelector';
@@ -17,6 +18,8 @@ interface StatsPanelProps {
   onDateRangeChange: (range: DateRange) => void;
   selectedTypes: string[];
   onSelectedTypesChange: (types: string[]) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function StatsPanel({
@@ -31,6 +34,8 @@ export function StatsPanel({
   onDateRangeChange,
   selectedTypes,
   onSelectedTypesChange,
+  isCollapsed = false,
+  onToggleCollapse,
 }: StatsPanelProps) {
   const stats = useMemo(() => {
     const total = activities.length;
@@ -77,7 +82,7 @@ export function StatsPanel({
 
   if (isLoading) {
     return (
-      <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 p-6 w-72 flex flex-col gap-4">
+      <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 p-6 w-84 flex flex-col gap-4">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-neutral-800 rounded-lg" />
           <div className="h-20 bg-neutral-800 rounded-lg" />
@@ -87,15 +92,43 @@ export function StatsPanel({
     );
   }
 
+  if (isCollapsed) {
+    return (
+      <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 w-14 flex flex-col items-center py-4">
+        <button
+          onClick={onToggleCollapse}
+          className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          title="Expand sidebar"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+        <div className="mt-4 flex-1 flex flex-col items-center gap-3">
+          <PanelLeft className="w-5 h-5 text-neutral-600" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 p-5 w-72 flex flex-col gap-5 overflow-y-auto">
-      <div>
-        <h1 className="text-xl font-semibold text-white tracking-tight">
-          YouHit
-        </h1>
-        <p className="text-neutral-500 text-xs mt-0.5">
-          Visualize your activity density
-        </p>
+    <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 p-5 w-84 flex flex-col gap-5 overflow-y-auto relative">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-white tracking-tight">
+            YouHit
+          </h1>
+          <p className="text-neutral-500 text-xs mt-0.5">
+            Visualize your activity density
+          </p>
+        </div>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-500 hover:text-white transition-colors"
+            title="Collapse sidebar"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       <ColorSchemeSelector selected={colorScheme} onChange={onColorSchemeChange} />
