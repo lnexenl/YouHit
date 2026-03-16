@@ -1,8 +1,8 @@
 {
-  "name": "strava-heatmap",
+  "name": "youhit",
   "version": "1.0.0",
   "private": true,
-  "description": "Strava Heatmap - Visualize your activity history as an interactive heatmap",
+  "description": "YouHit - Visualize your activity history as an interactive heatmap",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
