@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import type { Activity } from '@/types/activity';
 import { ColorSchemeSelector, ColorSchemeKey } from './ColorSchemeSelector';
 import { ActivityTypeSelector } from './ActivityTypeSelector';
+import { MapStyleSelector, MapStyleKey } from './MapStyleSelector';
+import { DateRangeSelector, DateRange } from './DateRangeSelector';
 
 interface StatsPanelProps {
   activities: Activity[];
@@ -9,6 +11,10 @@ interface StatsPanelProps {
   isLoading: boolean;
   colorScheme: ColorSchemeKey;
   onColorSchemeChange: (scheme: ColorSchemeKey) => void;
+  mapStyle: MapStyleKey;
+  onMapStyleChange: (style: MapStyleKey) => void;
+  dateRange: DateRange;
+  onDateRangeChange: (range: DateRange) => void;
   selectedTypes: string[];
   onSelectedTypesChange: (types: string[]) => void;
 }
@@ -19,6 +25,10 @@ export function StatsPanel({
   isLoading,
   colorScheme,
   onColorSchemeChange,
+  mapStyle,
+  onMapStyleChange,
+  dateRange,
+  onDateRangeChange,
   selectedTypes,
   onSelectedTypesChange,
 }: StatsPanelProps) {
@@ -89,6 +99,10 @@ export function StatsPanel({
       </div>
 
       <ColorSchemeSelector selected={colorScheme} onChange={onColorSchemeChange} />
+
+      <MapStyleSelector selected={mapStyle} onChange={onMapStyleChange} />
+
+      <DateRangeSelector value={dateRange} onChange={onDateRangeChange} />
 
       <ActivityTypeSelector
         activities={allActivities}

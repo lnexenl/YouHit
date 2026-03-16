@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivities';
 import { LogOut, RefreshCw } from 'lucide-react';
 import type { ColorSchemeKey } from '@/components/ColorSchemeSelector';
+import type { MapStyleKey } from '@/components/MapStyleSelector';
+import type { DateRange } from '@/components/DateRangeSelector';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +24,8 @@ function AppContent() {
   const { activities, isLoading: activitiesLoading, refetch } = useActivities(isAuthenticated);
 
   const [colorScheme, setColorScheme] = useState<ColorSchemeKey>('flare');
-
+  const [mapStyle, setMapStyle] = useState<MapStyleKey>('dark-v11');
+  const [dateRange, setDateRange] = useState<DateRange>({ startDate: null, endDate: null });
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   const allTypes = useMemo(() => {
@@ -41,12 +44,33 @@ function AppContent() {
   }, [allTypes, selectedTypes.length]);
 
   const filteredActivities = useMemo(() => {
-    if (selectedTypes.length === allTypes.length) return activities;
-    return activities.filter((a) => {
-      const sport = a.sport_type || a.type;
-      return selectedTypes.includes(sport);
-    });
-  }, [activities, selectedTypes, allTypes.length]);
+    let filtered = activities;
+
+    // Filter by activity type
+    if (selectedTypes.length !== allTypes.length) {
+      filtered = filtered.filter((a) => {
+        const sport = a.sport_type || a.type;
+        return selectedTypes.includes(sport);
+      });
+    }
+
+    // Filter by date range
+    if (dateRange.startDate || dateRange.endDate) {
+      filtered = filtered.filter((a) => {
+        if (!a.start_date) return false;
+        const activityDate = new Date(a.start_date);
+        if (dateRange.startDate && activityDate < new Date(dateRange.startDate)) {
+          return false;
+        }
+        if (dateRange.endDate && activityDate > new Date(dateRange.endDate + 'T23:59:59')) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [activities, selectedTypes, allTypes.length, dateRange]);
 
   if (authLoading) {
     return (
@@ -93,6 +117,10 @@ function AppContent() {
           isLoading={activitiesLoading}
           colorScheme={colorScheme}
           onColorSchemeChange={setColorScheme}
+          mapStyle={mapStyle}
+          onMapStyleChange={setMapStyle}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
           selectedTypes={selectedTypes}
           onSelectedTypesChange={setSelectedTypes}
         />
@@ -144,7 +172,7 @@ function AppContent() {
         )}
         
         {filteredActivities.length > 0 && !activitiesLoading ? (
-          <Heatmap activities={filteredActivities} colorScheme={colorScheme} />
+          <Heatmap activities={filteredActivities} colorScheme={colorScheme} mapStyle={mapStyle} />
         ) : !activitiesLoading ? (
           <div className="h-full flex items-center justify-center text-neutral-500">
             <p>No activities found with location data</p>

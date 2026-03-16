@@ -7,6 +7,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import type { Activity } from '@/types/activity';
 import { decodePolyline, calculateWeightedCenter } from '@/lib/polyline';
 import { getPathColor, ColorSchemeKey } from './ColorSchemeSelector';
+import type { MapStyleKey } from './MapStyleSelector';
 
 function DeckGLOverlay(props: MapboxOverlayProps) {
   const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
@@ -17,11 +18,23 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
 interface HeatmapProps {
   activities: Activity[];
   colorScheme: ColorSchemeKey;
+  mapStyle: MapStyleKey;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-export function Heatmap({ activities, colorScheme }: HeatmapProps) {
+const getStyleUrl = (key: MapStyleKey): string => {
+  const styles: Record<MapStyleKey, string> = {
+    'dark-v11': 'mapbox://styles/mapbox/dark-v11',
+    'streets-v12': 'mapbox://styles/mapbox/streets-v12',
+    'satellite-v9': 'mapbox://styles/mapbox/satellite-v9',
+    'outdoors-v12': 'mapbox://styles/mapbox/outdoors-v12',
+    'light-v11': 'mapbox://styles/mapbox/light-v11',
+  };
+  return styles[key];
+};
+
+export function Heatmap({ activities, colorScheme, mapStyle }: HeatmapProps) {
   const paths = useMemo(() => {
     return activities
       .filter((a) => a.map?.summary_polyline)
@@ -92,7 +105,7 @@ export function Heatmap({ activities, colorScheme }: HeatmapProps) {
   return (
     <Map
       initialViewState={initialViewState}
-      mapStyle="mapbox://styles/mapbox/dark-v11"
+      mapStyle={getStyleUrl(mapStyle)}
       mapboxAccessToken={MAPBOX_TOKEN}
       attributionControl={false}
     >
