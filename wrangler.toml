@@ -4,9 +4,6 @@ compatibility_date = "2026-01-01"
 [assets]
 directory = "./client/dist"
 binding = "ASSETS"
-[[kv_namespaces]]
-binding = "SESSION_KV"
-id = "your-kv-namespace-id"
 [vars]
 CLIENT_URL = "https://youhit.lnex.dev"
 API_REDIRECT_URI = "https://youhit.lnex.dev/auth/callback"
