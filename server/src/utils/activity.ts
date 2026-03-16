@@ -52,6 +52,11 @@ export async function exchangeCodeForToken(
   clientSecret: string,
   redirectUri: string
 ): Promise<TokenResponse> {
+  console.log('Token exchange request:', {
+    client_id: clientId ? `${clientId.substring(0, 3)}...` : 'undefined',
+    redirect_uri: redirectUri,
+  });
+
   const response = await fetch(`${AUTH_BASE}/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,7 +70,9 @@ export async function exchangeCodeForToken(
   });
 
   if (!response.ok) {
-    throw new Error(`Token exchange failed: ${response.status}`);
+    const errorBody = await response.text();
+    console.error('Token exchange failed:', response.status, errorBody);
+    throw new Error(`Token exchange failed: ${response.status} - ${errorBody}`);
   }
 
   return response.json();

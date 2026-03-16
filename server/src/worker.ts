@@ -63,6 +63,13 @@ app.get('/auth/callback', async (c) => {
   }
 
   try {
+    console.log('OAuth callback - env check:', {
+      API_CLIENT_ID: c.env.API_CLIENT_ID ? 'set' : 'undefined',
+      API_CLIENT_SECRET: c.env.API_CLIENT_SECRET ? 'set' : 'undefined',
+      API_REDIRECT_URI: c.env.API_REDIRECT_URI,
+      CLIENT_URL: c.env.CLIENT_URL,
+    });
+
     const tokenData = await exchangeCodeForToken(
       code as string,
       c.env.API_CLIENT_ID,
