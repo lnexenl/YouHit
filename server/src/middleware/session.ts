@@ -29,5 +29,5 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export function isAuthenticated(req: AuthenticatedRequest): boolean {
-  return !!(req.session.accessToken && Date.now() / 1000 < req.session.expiresAt!);
+  return !!(req.session.accessToken && req.session.refreshToken);
 }
