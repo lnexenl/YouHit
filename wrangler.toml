@@ -1,4 +1,4 @@
-name = "YouHit"
+name = "youhit"
 main = "server/src/worker.ts"
 compatibility_date = "2026-01-01"
 [assets]
@@ -8,8 +8,8 @@ binding = "ASSETS"
 binding = "SESSION_KV"
 id = "your-kv-namespace-id"
 [vars]
-CLIENT_URL = "https://youhit.your-subdomain.workers.dev"
-API_REDIRECT_URI = "https://youhit.your-subdomain.workers.dev/auth/callback"
+CLIENT_URL = "https://youhit.lnex.dev"
+API_REDIRECT_URI = "https://youhit.lnex.dev/auth/callback"
 # Secrets (set via: wrangler secret put)
 # API_CLIENT_ID
 # API_CLIENT_SECRET
