@@ -6,6 +6,7 @@ import {
   getAuthUrl,
   getAthlete,
   getActivities,
+  getActivity,
   refreshAccessToken,
 } from './utils/activity'
 
@@ -171,6 +172,28 @@ app.get('/api/activities', async (c) => {
   } catch (err) {
     console.error('Get activities error:', err)
     return c.json({ error: 'Failed to fetch activities' }, 500)
+  }
+})
+
+// API: Single Activity (with full polyline)
+app.get('/api/activities/:id', async (c) => {
+  const session = await getSession(c)
+  if (!session) return c.json({ error: 'Not authenticated' }, 401)
+
+  const token = await ensureValidToken(c, session)
+  if (!token) return c.json({ error: 'Token refresh failed' }, 401)
+
+  const activityId = parseInt(c.req.param('id'))
+  if (isNaN(activityId)) {
+    return c.json({ error: 'Invalid activity ID' }, 400)
+  }
+
+  try {
+    const activity = await getActivity(token, activityId)
+    return c.json(activity)
+  } catch (err) {
+    console.error('Get activity error:', err)
+    return c.json({ error: 'Failed to fetch activity' }, 500)
   }
 })
 

@@ -139,6 +139,21 @@ export async function getActivities(
   return response.json();
 }
 
+export async function getActivity(
+  accessToken: string,
+  activityId: number
+): Promise<Activity & { map?: { polyline?: string; summary_polyline: string } }> {
+  const response = await fetch(`${API_BASE}/activities/${activityId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Get activity ${activityId} failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export function getAuthUrl(clientId: string, redirectUri: string): string {
   const params = new URLSearchParams({
     client_id: clientId,

@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { getActivities, getAthlete } from '../utils/activity.js';
+import { getActivities, getAthlete, getActivity } from '../utils/activity.js';
 import { isAuthenticated, AuthenticatedRequest } from '../middleware/session.js';
 import { ensureValidToken } from './auth.js';
 
@@ -49,6 +49,32 @@ router.get('/activities', async (req, res: Response) => {
   } catch (err) {
     console.error('Get activities error:', err);
     res.status(500).json({ error: 'Failed to fetch activities' });
+  }
+});
+
+router.get('/activities/:id', async (req, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+  
+  if (!isAuthenticated(authReq)) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  const activityId = parseInt(req.params.id);
+  if (isNaN(activityId)) {
+    return res.status(400).json({ error: 'Invalid activity ID' });
+  }
+
+  try {
+    const token = await ensureValidToken(authReq);
+    if (!token) {
+      return res.status(401).json({ error: 'Token refresh failed' });
+    }
+
+    const activity = await getActivity(token, activityId);
+    res.json(activity);
+  } catch (err) {
+    console.error('Get activity error:', err);
+    res.status(500).json({ error: 'Failed to fetch activity' });
   }
 });
 
