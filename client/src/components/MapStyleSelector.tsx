@@ -66,14 +66,3 @@ export function MapStyleSelector({ selected, onChange, showLabels, onShowLabelsC
     </div>
   );
 }
-
-export function getStyleUrl(key: MapStyleKey, showLabels: boolean): string {
-  const styles: Record<MapStyleKey, string> = {
-    'dark-v11': showLabels ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/dark-v11-no-labels',
-    'streets-v12': showLabels ? 'mapbox://styles/mapbox/streets-v12' : 'mapbox://styles/mapbox/streets-v12-no-labels',
-    'satellite-v9': showLabels ? 'mapbox://styles/mapbox/satellite-v9' : 'mapbox://styles/mapbox/satellite-streets-v12',
-    'outdoors-v12': showLabels ? 'mapbox://styles/mapbox/outdoors-v12' : 'mapbox://styles/mapbox/outdoors-v12-no-labels',
-    'light-v11': showLabels ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/light-v11-no-labels',
-  };
-  return styles[key];
-}

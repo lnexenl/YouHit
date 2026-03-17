@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useMemo, useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Map, useControl, MapRef } from 'react-map-gl';
 import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox';
 import { PathLayer } from '@deck.gl/layers';
@@ -8,7 +8,29 @@ import type { Activity } from '@/types/activity';
 import { decodePolyline, calculateWeightedCenter } from '@/lib/polyline';
 import { getPathColor, ColorSchemeKey } from './ColorSchemeSelector';
 import type { MapStyleKey } from './MapStyleSelector';
-import { getStyleUrl } from './MapStyleSelector';
+import { MAP_STYLES } from './MapStyleSelector';
+
+const LABEL_LAYER_PATTERNS = [
+  'label',
+  'poi',
+  'place',
+  'settlement',
+  'country',
+  'state',
+  'city',
+  'town',
+  'village',
+  'water-label',
+  'natural',
+  'airport',
+  'heliport',
+  'ferry',
+];
+
+function isLabelLayer(layerId: string): boolean {
+  const lowerId = layerId.toLowerCase();
+  return LABEL_LAYER_PATTERNS.some((pattern) => lowerId.includes(pattern));
+}
 
 function DeckGLOverlay(props: MapboxOverlayProps) {
   const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
@@ -50,6 +72,26 @@ export const Heatmap = forwardRef<HeatmapRef, HeatmapProps>(function Heatmap(
   useImperativeHandle(ref, () => ({
     downloadImage,
   }));
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current.getMap();
+
+    const updateLabelVisibility = () => {
+      const layers = map.getStyle()?.layers || [];
+      layers.forEach((layer) => {
+        if (layer.id && isLabelLayer(layer.id)) {
+          map.setLayoutProperty(layer.id, 'visibility', showLabels ? 'visible' : 'none');
+        }
+      });
+    };
+
+    if (map.isStyleLoaded()) {
+      updateLabelVisibility();
+    } else {
+      map.once('style.load', updateLabelVisibility);
+    }
+  }, [showLabels, mapStyle]);
 
   const paths = useMemo(() => {
     return activities
@@ -123,7 +165,7 @@ export const Heatmap = forwardRef<HeatmapRef, HeatmapProps>(function Heatmap(
     <Map
       ref={mapRef}
       initialViewState={initialViewState}
-      mapStyle={getStyleUrl(mapStyle, showLabels)}
+      mapStyle={MAP_STYLES[mapStyle].style}
       mapboxAccessToken={MAPBOX_TOKEN}
       attributionControl={false}
       preserveDrawingBuffer={true}
