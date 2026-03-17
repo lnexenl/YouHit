@@ -86,11 +86,19 @@ export const Heatmap = forwardRef<HeatmapRef, HeatmapProps>(function Heatmap(
       });
     };
 
+    const handleStyleData = () => {
+      updateLabelVisibility();
+    };
+
     if (map.isStyleLoaded()) {
       updateLabelVisibility();
-    } else {
-      map.once('style.load', updateLabelVisibility);
     }
+
+    map.on('styledata', handleStyleData);
+
+    return () => {
+      map.off('styledata', handleStyleData);
+    };
   }, [showLabels, mapStyle]);
 
   const paths = useMemo(() => {
