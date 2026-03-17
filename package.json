@@ -1,6 +1,6 @@
 {
   "name": "youhit",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "YouHit - Visualize your activity history as an interactive heatmap",
   "scripts": {

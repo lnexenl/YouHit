@@ -2,10 +2,26 @@
 
 Visualize your entire activity history as an interactive heatmap.
 
+## Features
+
+- **Interactive Heatmap**: Path-based visualization using deck.gl PathLayer
+- **High-Precision Routes**: Full polylines (1000-10000+ points per activity)
+- **7 Color Schemes**: Flare, Fire, Ocean, Forest, Purple, Neon, Gold
+- **5 Map Styles**: Dark, Streets, Satellite, Outdoors, Light
+- **Label Visibility Toggle**: Hide/show map labels
+- **Activity Type Filter**: Multi-select by sport type
+- **Date Range Filter**: Filter activities by date
+- **Auto-Center**: Centers on your most active area
+- **Statistics Panel**: Distance, elevation, moving time, sport breakdown
+- **Image Download**: Export heatmap as PNG
+- **Cloudflare Workers**: Serverless deployment
+
 ## Quick Start
 
 ### 1. Clone & Install
 ```bash
+git clone https://github.com/lnexenl/YouHit.git
+cd YouHit
 npm install
 ```
 
@@ -26,7 +42,9 @@ CLIENT_URL=http://localhost:5173
 VITE_MAPBOX_TOKEN=your_mapbox_token
 ```
 
-Get a Mapbox token from https://account.mapbox.com/access-tokens/
+Get API credentials from:
+- Strava API: https://www.strava.com/settings/api
+- Mapbox: https://account.mapbox.com/access-tokens/
 
 ### 3. Run Development Servers
 ```bash
@@ -62,25 +80,20 @@ binding = "SESSION_KV"
 id = "your-kv-namespace-id"
 ```
 
-### 3. Set Secrets
-```bash
-wrangler secret put API_CLIENT_ID
-wrangler secret put API_CLIENT_SECRET
-wrangler secret put SESSION_SECRET
-```
+### 3. Set Secrets via CF Dashboard
+
+Go to Workers → Settings → Variables and add:
+- `API_CLIENT_ID`
+- `API_CLIENT_SECRET`
+- `SESSION_SECRET`
+- `CLIENT_URL`
+- `API_REDIRECT_URI`
 
 ### 4. Update OAuth Redirect URI
 
-In your API application settings, set the callback URL to:
+In your Strava API application settings, set the callback URL to:
 ```
 https://youhit.your-subdomain.workers.dev/auth/callback
-```
-
-Update `wrangler.toml`:
-```toml
-[vars]
-CLIENT_URL = "https://youhit.your-subdomain.workers.dev"
-API_REDIRECT_URI = "https://youhit.your-subdomain.workers.dev/auth/callback"
 ```
 
 ### 5. Deploy
@@ -103,20 +116,34 @@ youhit/
 │   └── src/
 │       ├── index.ts          # Express server (local dev)
 │       ├── worker.ts         # Hono worker (CF Workers)
+│       ├── routes/
+│       │   ├── auth.ts       # OAuth routes
+│       │   └── activities.ts # API proxy
 │       └── utils/
 │           └── activity.ts   # API client (fetch-based)
 │
 ├── client/
 │   └── src/
-│       ├── App.tsx
+│       ├── App.tsx           # Main component
 │       ├── components/
 │       │   ├── Heatmap.tsx
+│       │   ├── StatsPanel.tsx
+│       │   ├── ColorSchemeSelector.tsx
+│       │   ├── MapStyleSelector.tsx
+│       │   ├── ActivityTypeSelector.tsx
+│       │   ├── DateRangeSelector.tsx
 │       │   └── ...
 │       ├── hooks/
+│       │   ├── useAuth.ts
+│       │   └── useActivities.ts
 │       ├── lib/
+│       │   ├── api.ts
+│       │   └── polyline.ts
 │       └── types/
+│           └── activity.ts
 │
-└── wrangler.toml             # CF Workers config
+├── wrangler.toml             # CF Workers config
+└── AGENTS.md                 # AI reference documentation
 ```
 
 ## Tech Stack
@@ -127,13 +154,17 @@ youhit/
 - **Auth**: OAuth2 with KV-based sessions
 - **Deploy**: Cloudflare Workers
 
-## Features
+## API Endpoints
 
-- Interactive heatmap visualization of all your activities
-- Color scheme selector (7 themes)
-- Activity type filter
-- Auto-center on your most active area
-- Statistics panel with distance, elevation, and time
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/auth/login` | GET | Redirect to OAuth provider |
+| `/auth/callback` | GET | OAuth callback handler |
+| `/auth/status` | GET | Check authentication status |
+| `/auth/logout` | POST | Clear session |
+| `/api/athlete` | GET | Get authenticated athlete |
+| `/api/activities` | GET | List activities (paginated) |
+| `/api/activities/:id` | GET | Get single activity with full polyline |
 
 ## License
 
