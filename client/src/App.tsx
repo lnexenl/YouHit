@@ -6,7 +6,6 @@ import { LoginButton } from '@/components/LoginButton';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivities';
-import { LogOut, RefreshCw } from 'lucide-react';
 import type { ColorSchemeKey } from '@/components/ColorSchemeSelector';
 import type { MapStyleKey } from '@/components/MapStyleSelector';
 import type { DateRange } from '@/components/DateRangeSelector';
@@ -131,44 +130,10 @@ function AppContent() {
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           heatmapRef={heatmapRef}
+          athlete={athlete}
+          onRefresh={refetch}
+          onLogout={logout}
         />
-        
-        {athlete && (
-          <div className="p-4 border-t border-neutral-800 bg-neutral-900/80">
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src={athlete.profile_medium}
-                alt={`${athlete.firstname} ${athlete.lastname}`}
-                className="w-10 h-10 rounded-full"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">
-                  {athlete.firstname} {athlete.lastname}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => refetch()}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 
-                           bg-neutral-800 hover:bg-neutral-700 text-neutral-300 
-                           rounded-lg text-sm transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </button>
-              <button
-                onClick={logout}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 
-                           bg-neutral-800 hover:bg-neutral-700 text-neutral-300 
-                           rounded-lg text-sm transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 relative">

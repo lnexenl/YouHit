@@ -1,11 +1,18 @@
 import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight, PanelLeft, Download, Map, Activity as ActivityIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PanelLeft, Download, Map, Activity as ActivityIcon, RefreshCw, LogOut } from 'lucide-react';
 import type { Activity } from '@/types/activity';
 import { ColorSchemeSelector, ColorSchemeKey } from './ColorSchemeSelector';
 import { ActivityTypeSelector } from './ActivityTypeSelector';
 import { MapStyleSelector, MapStyleKey } from './MapStyleSelector';
 import { DateRangeSelector, DateRange } from './DateRangeSelector';
 import type { HeatmapRef } from './Heatmap';
+
+interface PartialAthlete {
+  id: number;
+  firstname: string;
+  lastname: string;
+  profile_medium: string;
+}
 
 interface StatsPanelProps {
   activities: Activity[];
@@ -24,6 +31,9 @@ interface StatsPanelProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   heatmapRef: React.RefObject<HeatmapRef | null>;
+  athlete: PartialAthlete | null;
+  onRefresh: () => void;
+  onLogout: () => void;
 }
 
 export function StatsPanel({
@@ -43,6 +53,9 @@ export function StatsPanel({
   isCollapsed = false,
   onToggleCollapse,
   heatmapRef,
+  athlete,
+  onRefresh,
+  onLogout,
 }: StatsPanelProps) {
   const stats = useMemo(() => {
     const total = activities.length;
@@ -105,17 +118,29 @@ export function StatsPanel({
 
   if (isCollapsed) {
     return (
-      <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 w-14 flex flex-col items-center py-4">
-        <button
-          onClick={onToggleCollapse}
-          className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
-          title="Expand sidebar"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-        <div className="mt-4 flex-1 flex flex-col items-center gap-3">
-          <PanelLeft className="w-5 h-5 text-neutral-600" />
+      <div className="bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 w-14 flex flex-col">
+        <div className="flex flex-col items-center py-4">
+          <button
+            onClick={onToggleCollapse}
+            className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+            title="Expand sidebar"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+          <div className="mt-4 flex-1 flex flex-col items-center gap-3">
+            <PanelLeft className="w-5 h-5 text-neutral-600" />
+          </div>
         </div>
+        {athlete && (
+          <div className="mt-auto p-2 border-t border-neutral-800">
+            <img
+              src={athlete.profile_medium}
+              alt={`${athlete.firstname} ${athlete.lastname}`}
+              className="w-10 h-10 rounded-full mx-auto"
+              title={`${athlete.firstname} ${athlete.lastname}`}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -239,6 +264,43 @@ export function StatsPanel({
             ))}
         </div>
       </div>
+
+      {athlete && (
+        <div className="mt-auto pt-4 border-t border-neutral-800">
+          <div className="flex items-center gap-3 mb-4">
+            <img
+              src={athlete.profile_medium}
+              alt={`${athlete.firstname} ${athlete.lastname}`}
+              className="w-10 h-10 rounded-full"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-medium truncate">
+                {athlete.firstname} {athlete.lastname}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onRefresh}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 
+                         bg-neutral-800 hover:bg-neutral-700 text-neutral-300 
+                         rounded-lg text-sm transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+            <button
+              onClick={onLogout}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 
+                         bg-neutral-800 hover:bg-neutral-700 text-neutral-300 
+                         rounded-lg text-sm transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
